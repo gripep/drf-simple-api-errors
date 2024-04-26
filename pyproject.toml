@@ -1,0 +1,74 @@
+[tool.poetry]
+name = "drf-simple-api-errors"
+version = "1.0.0"
+description = "A library for Django Rest Framework returning consistent and easy-to-parse API error messages."
+authors = ["Gian <30044863+gripep@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/gripep/drf-simple-api-errors"
+repository = "https://github.com/gripep/drf-simple-api-errors"
+documentation = "https://github.com/gripep/drf-simple-api-errors/blob/master/README.md"
+packages = [{ include = "drf_simple_api_errors" }]
+keywords = [
+    "python",
+    "django",
+    "django rest framework",
+    "drf",
+    "error handling",
+    "errors",
+    "exceptions",
+]
+classifiers = [
+    "Framework :: Django",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+include = ["drf_simple_api_errors", "LICENSE.md"]
+
+
+[tool.poetry.dependencies]
+python = ">=3.8.1,<4.0"
+
+Django = { version = ">=2.2" }
+djangorestframework = { version = ">=3.0" }
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.1.1"
+factory-boy = "^3.3.0"
+flake8 = "^7.0.0"
+isort = "^5.13.2"
+pytest = "^8.0.0"
+pytest-cov = "^5.0.0"
+pytest-django = "^4.8.0"
+pytest-mock = "^3.12.0"
+six = "^1.16.0"
+
+
+[tool.isort]
+# https://pycqa.github.io/isort/docs/configuration/profiles.html
+profile = "black"
+combine_as_imports = "True"
+
+known_django = ["django", "rest_framework"]
+known_first_party = ["test_app"]
+default_section = "THIRDPARTY"
+sections = [
+    "FUTURE",
+    "STDLIB",
+    "DJANGO",
+    "THIRDPARTY",
+    "FIRSTPARTY",
+    "LOCALFOLDER",
+]

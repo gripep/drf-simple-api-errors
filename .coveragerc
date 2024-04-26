@@ -1,0 +1,2 @@
+[run]
+omit = *apps.py, *exceptions.py
