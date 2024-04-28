@@ -19,4 +19,4 @@ test:  ## Run unittests with poetry
 	poetry run pytest test_project
 
 test/cov:  ## Run code coverage tests coverage with poetry
-	poetry run pytest test_project --cov=drf_simple_api_errors
+	poetry run pytest test_project --cov=drf_simple_api_errors --cov-report xml:coverage.xml
