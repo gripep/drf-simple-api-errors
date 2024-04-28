@@ -1,8 +1,13 @@
 # Django Rest Framework Simple API Errors
 
+![PyPI](https://img.shields.io/pypi/v/drf-simple-api-errors)
+![test workflow](https://github.com/gripep/drf-simple-api-errors/actions/workflows/build.yaml/badge.svg)
+[![codecov](https://codecov.io/gh/gripep/drf-simple-api-errors/graph/badge.svg?token=1LJV518KMD)](https://codecov.io/gh/gripep/drf-simple-api-errors)
+![pyversions](https://img.shields.io/pypi/pyversions/drf-simple-api-errors.svg)
+
 ## What is this?
 
-A library for [Django Rest Framework](https://www.django-rest-framework.org/) returning **consistent and easy-to-parse API error messages**.
+A library for [Django Rest Framework](https://www.django-rest-framework.org/) returning **consistent, predictable and easy-to-parse API error messages**.
 
 This library was built with [RFC7807](https://tools.ietf.org/html/rfc7807) guidelines in mind, but with a small twist: it defines a "problem detail" as a `list` but it still serves as a way to include errors in a predictable and easy-to-parse format for any API consumer.
 

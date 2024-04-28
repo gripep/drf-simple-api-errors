@@ -26,6 +26,9 @@ classifiers = [
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Framework :: Django',
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
@@ -35,8 +38,8 @@ include = ["drf_simple_api_errors", "LICENSE.md"]
 [tool.poetry.dependencies]
 python = ">=3.8.1,<4.0"
 
-Django = { version = ">=2.2" }
-djangorestframework = { version = ">=3.0" }
+Django = ">=2.2"
+djangorestframework = ">=3.0"
 
 
 [build-system]
