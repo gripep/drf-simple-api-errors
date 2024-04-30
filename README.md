@@ -56,9 +56,9 @@ API error messages typically include the following keys:
 
 - `"title"` (`str`): A brief summary that describes the problem type
 - `"detail"` (`list[str] | None`): A list of specific explanations related to the problem
-- `"invalid_params"` (`list[dict] | None`): A list of strings containing details about parameters that were invalid or malformed in the request. Each object within this list provides:
-  - `"name"` (`str`): The name of the parameter that was found to be invalid.
-  - `"reasons"` (`list[str]`): A list of strings describing the specific issues or reasons why the parameter was considered invalid or malformed.
+- `"invalid_params"` (`list[dict] | None`): A list of dict containing details about parameters that were invalid or malformed in the request. Each dict within this list provides:
+  - `"name"` (`str`): The name of the parameter that was found to be invalid
+  - `"reasons"` (`list[str]`): A list of strings describing the specific reasons why the parameter was considered invalid or malformed
 
 ```json
 {
