@@ -12,6 +12,12 @@ logger = logging.getLogger(__name__)
 
 
 def exc_detail_handler(data: Dict, exc_detail: Union[Dict, List]) -> Dict:
+    """
+    Handle the exception detail and set it to the `data` dictionary.
+
+    If the `exc_detail` is a dictionary, it will set to the `data` dictionary.
+    If the `exc_detail` is a list, it will be set to the `data` dictionary.
+    """
     logger.debug("`exc_detail` is instance of %s" % type(exc_detail))
 
     if isinstance(exc_detail, dict):
@@ -23,6 +29,7 @@ def exc_detail_handler(data: Dict, exc_detail: Union[Dict, List]) -> Dict:
 
 
 def __exc_detail_as_dict_handler(data: Dict, exc_detail: Dict):
+    """Handle the exception detail as a dictionary."""
     exc_detail = flatten_dict(copy.deepcopy(exc_detail))
 
     invalid_params = []
@@ -56,6 +63,7 @@ def __exc_detail_as_dict_handler(data: Dict, exc_detail: Dict):
 
 
 def __exc_detail_as_list_handler(data: Dict, exc_detail: List):
+    """Handle the exception detail as a list."""
     detail = []
     for error in exc_detail:
         detail.append(error if not isinstance(error, list) else error[0])
@@ -65,6 +73,7 @@ def __exc_detail_as_list_handler(data: Dict, exc_detail: List):
 
 
 def is_exc_detail_same_as_default_detail(exc: APIException) -> bool:
+    """Check if the exception detail is the same as the default detail."""
     return (isinstance(exc.detail, str) and exc.detail == exc.default_detail) or (
         isinstance(exc.detail, list)
         and len(exc.detail) == 1
