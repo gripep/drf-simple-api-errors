@@ -2,8 +2,8 @@ name: Publish to PyPI
 
 on:
   release:
-    types: [ published ]
-    branches: [ master ]
+    types: [published]
+    branches: [master]
   workflow_dispatch:
 
 jobs:

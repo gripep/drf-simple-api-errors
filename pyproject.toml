@@ -42,11 +42,6 @@ Django = ">=2.2"
 djangorestframework = ">=3.0"
 
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-
 [tool.poetry.group.dev.dependencies]
 black = "^24.1.1"
 factory-boy = "^3.3.0"
@@ -75,3 +70,8 @@ sections = [
     "FIRSTPARTY",
     "LOCALFOLDER",
 ]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
