@@ -11,7 +11,13 @@ A library for [Django Rest Framework](https://www.django-rest-framework.org/) re
 
 This library was built with [RFC7807](https://tools.ietf.org/html/rfc7807) guidelines in mind, but with a small twist: it defines a "problem detail" as a list, but it still serves as a way to include errors in a predictable and easy-to-parse format for any API consumer. Error messages are formatted using RFC7807 keywords and DRF exception data.
 
-Compared to other similar and popular libraries, this library is based on RFC7807 guidelines and aims to provide not only a standardized format for error details, but also human readability.
+## What's different?
+
+Compared to other similar and popular libraries, this library:
+
+- Is based on RFC7807 guidelines
+- Aims to provide not only a standardized format for error details, but also human-readable error messages (perfect for both internal and public APIs)
+- Transforms both `django.core.exceptions.ValidationError` and `rest_framework.errors.ValidationError` to API errors, so you don't have to handle error raised by services/domain logic, `clean()`, or other functions/methods
 
 ## Table of Contents
 
