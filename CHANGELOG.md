@@ -13,3 +13,9 @@
 - Add docstrings to handlers
 - Improve Makefile
 - Improve README
+
+## [1.0.3] - 2025-mm-dd
+
+- Update README
+- Improve tests
+- Fix DRF API settings initialization
