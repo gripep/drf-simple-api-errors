@@ -431,5 +431,24 @@ class TestUtils:
     def test_camelize(self, field_input, expected_output):
         assert utils.camelize(field_input) == expected_output
 
-    def test_flatten_dict(self):
-        pass
+    @pytest.mark.parametrize(
+        "original_dict, flattened_dict",
+        [
+            ({"key": "value"}, {"key": "value"}),
+            ({"key": {"subkey": "value"}}, {"key.subkey": "value"}),
+            (
+                {"key": {"subkey": {"subsubkey": "value"}}},
+                {"key.subkey.subsubkey": "value"},
+            ),
+            (
+                {"key": {"subkey": "value", "subkey2": "value2"}},
+                {"key.subkey": "value", "key.subkey2": "value2"},
+            ),
+            (
+                {"key": {"subkey": {"subsubkey": "value", "subsubkey2": "value2"}}},
+                {"key.subkey.subsubkey": "value", "key.subkey.subsubkey2": "value2"},
+            ),
+        ],
+    )
+    def test_flatten_dict(self, original_dict, flattened_dict):
+        assert utils.flatten_dict(original_dict) == flattened_dict
