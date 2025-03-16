@@ -10,6 +10,7 @@ DEFAULTS = {
 }
 
 # List of settings that may be in string import notation
-IMPORT_STRINGS = ("EXTRA_HANDLERS", "CAMELIZE")
+# e.g. when defined in settings.py as "app.module.class_name"
+IMPORT_STRINGS = []
 
 api_settings = APISettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS)
