@@ -14,7 +14,7 @@
 - Improve Makefile
 - Improve README
 
-## [1.0.3] - 2025-mm-dd
+## [1.0.3] - 2025-03-16
 
 - Update README
 - Improve tests
