@@ -517,16 +517,35 @@ class TestModelSerializerErrors:
 
 class TestUtils:
     @pytest.mark.parametrize(
-        "field_input, expected_output",
+        "field_input, expected_output, camelize_enabled",
         [
-            ("", ""),
-            ("name", "name"),
-            ("first_name", "firstName"),
-            ("family_tree_name", "familyTreeName"),
-            ("very_long_last_name_and_first_name", "veryLongLastNameAndFirstName"),
+            ("", "", True),
+            ("name", "name", True),
+            ("first_name", "firstName", True),
+            ("family_tree_name", "familyTreeName", True),
+            (
+                "very_long_last_name_and_first_name",
+                "veryLongLastNameAndFirstName",
+                True,
+            ),
+            ("", "", False),
+            ("name", "name", False),
+            ("first_name", "first_name", False),
+            ("family_tree_name", "family_tree_name", False),
+            (
+                "very_long_last_name_and_first_name",
+                "very_long_last_name_and_first_name",
+                False,
+            ),
         ],
     )
-    def test_camelize(self, field_input, expected_output):
+    def test_camelize_with_settings_set(
+        self, mocker, field_input, expected_output, camelize_enabled
+    ):
+        mocker.patch(
+            "drf_simple_api_errors.settings.api_settings.CAMELIZE", camelize_enabled
+        )
+
         assert utils.camelize(field_input) == expected_output
 
     @pytest.mark.parametrize(

@@ -1,3 +1,17 @@
+"""
+This module provides functionality to format API exceptions into a structured error response.
+
+It defines the `APIErrorResponse` class, which represents
+the structure of the error response, and the `format_exc` function, which
+formats exceptions into this structure according to the type of exception, its detail,
+and any additional settings defined in the settings.
+
+Functions:
+    - `format_exc`:
+        Formats the given exception into a structured API error response.
+        Used by the exception handler to return a consistent error format.
+"""
+
 import copy
 import logging
 from dataclasses import asdict, dataclass, field as dataclass_field
@@ -7,9 +21,9 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import exceptions
 from rest_framework.settings import api_settings as drf_api_settings
 
+from drf_simple_api_errors import utils
 from drf_simple_api_errors.settings import api_settings
 from drf_simple_api_errors.types import APIErrorResponseDict
-from drf_simple_api_errors.utils import camelize, flatten_dict
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +60,8 @@ class APIErrorResponse:
         """Convert the APIErrorResponse instance to a dictionary."""
         response_dict = asdict(self)
 
-        if api_settings.CAMELIZE:
-            for key in list(response_dict.keys()):
-                response_dict[camelize(key)] = response_dict.pop(key)
+        for key in list(response_dict.keys()):
+            response_dict[utils.camelize(key)] = response_dict.pop(key)
 
         return response_dict
 
@@ -112,7 +125,7 @@ def _format_exc_detail_dict(
     # Start by flattening the exc dict.
     # This is necessary as the exception detail can be nested and
     # we want to flatten it to a single level dict as part of this library design.
-    exc_detail = flatten_dict(copy.deepcopy(exc_detail))
+    exc_detail = utils.flatten_dict(copy.deepcopy(exc_detail))
 
     # Track the invalid params.
     # This represents the fields that are invalid and have errors associated with them.
@@ -136,7 +149,7 @@ def _format_exc_detail_dict(
             # N.B. If the error is a string, we will convert it to a list
             # to keep the consistency with the InvalidParamDict type.
             invalid_param = InvalidParam(
-                name=field if not api_settings.CAMELIZE else camelize(field),
+                name=utils.camelize(field),
                 reason=error if isinstance(error, list) else [error],
             )
             invalid_params.append(invalid_param)
