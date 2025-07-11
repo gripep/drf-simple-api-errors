@@ -1,6 +1,6 @@
 import re
 
-from .settings import api_settings
+from drf_simple_api_errors.settings import api_settings
 
 
 def camelize(field: str) -> str:
