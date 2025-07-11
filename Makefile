@@ -4,10 +4,6 @@
 install:
 	@poetry install --with dev -v
 
-# Run poetry shell
-shell:
-	@poetry shell
-
 # Run formatters (black, isort) with poetry
 format:
 	@poetry run isort drf_simple_api_errors test_project
