@@ -8,71 +8,148 @@ from drf_simple_api_errors import exception_handler, utils
 from test_app.utils import ErrorTriggers, render_response
 
 
-@pytest.mark.django_db
-class TestErrors:
-    def test_django_http404_ok(self, mocker):
-        exc = Http404()
-        response = exception_handler(exc, mocker.Mock())
-
-        expected_response = {"title": "Not found."}
-        assert render_response(response.data) == expected_response
-
-    def test_django_permission_denied_ok(self, mocker):
-        exc = PermissionDenied()
-        response = exception_handler(exc, mocker.Mock())
-
-        expected_response = {
-            "title": "You do not have permission to perform this action."
-        }
-        assert render_response(response.data) == expected_response
+class TestDjangoExceptions:
+    """Test the exception handler for various Django exceptions."""
 
     @pytest.mark.parametrize(
-        "error_message, expected_response",
+        "error_message, code, params, expected_response",
         [
+            # Raising a single error message
             (
                 "Error message.",
-                {"title": "Validation error.", "detail": ["Error message."]},
-            ),
-            (
-                [f"Error message {i}." for i in range(2)],
+                None,
+                None,
                 {
                     "title": "Validation error.",
-                    "detail": ["Error message 0.", "Error message 1."],
+                    "detail": ["Error message."],
+                    "invalid_params": None,
                 },
             ),
             (
-                {"field": "Error message."},
+                "Error message: %(msg)s.",
+                "invalid",
+                {"msg": "ERROR"},
                 {
                     "title": "Validation error.",
+                    "detail": ["Error message: ERROR."],
+                    "invalid_params": None,
+                },
+            ),
+            # Raising multiple error messages
+            (
+                [f"Error message {i+1}." for i in range(2)],
+                None,
+                None,
+                {
+                    "title": "Validation error.",
+                    "detail": ["Error message 1.", "Error message 2."],
+                    "invalid_params": None,
+                },
+            ),
+            (
+                [
+                    ValidationError(f"Error message {i+1}.", code=f"error {i+1}")
+                    for i in range(2)
+                ],
+                None,
+                None,
+                {
+                    "title": "Validation error.",
+                    "detail": ["Error message 1.", "Error message 2."],
+                    "invalid_params": None,
+                },
+            ),
+            # Raising a dictionary of error messages
+            (
+                {"field": "Error message."},
+                None,
+                None,
+                {
+                    "title": "Validation error.",
+                    "detail": None,
                     "invalid_params": [{"name": "field", "reason": ["Error message."]}],
+                },
+            ),
+            (
+                {"field": [f"Error message {i+1}." for i in range(2)]},
+                None,
+                None,
+                {
+                    "title": "Validation error.",
+                    "detail": None,
+                    "invalid_params": [
+                        {
+                            "name": "field",
+                            "reason": ["Error message 1.", "Error message 2."],
+                        },
+                    ],
                 },
             ),
         ],
     )
-    def test_django_validation_error_ok(self, error_message, expected_response, mocker):
-        exc = ValidationError(error_message)
+    def test_django_validation_error_ok(
+        self, error_message, code, params, expected_response, mocker
+    ):
+        """
+        Test the exception handler for ValidationError exceptions.
+        """
+        exc = ValidationError(error_message, code, params)
         response = exception_handler(exc, mocker.Mock())
 
         assert render_response(response.data) == expected_response
+
+    def test_django_http404_ok(self, mocker):
+        """Test the exception handler for Http404 exceptions."""
+        exc = Http404()
+        response = exception_handler(exc, mocker.Mock())
+
+        expected_response = {
+            "title": "Not found.",
+            "detail": None,
+            "invalid_params": None,
+        }
+        assert render_response(response.data) == expected_response
+
+    def test_django_permission_denied_ok(self, mocker):
+        """Test the exception handler for PermissionDenied exceptions."""
+        exc = PermissionDenied()
+        response = exception_handler(exc, mocker.Mock())
+
+        expected_response = {
+            "title": "You do not have permission to perform this action.",
+            "detail": None,
+            "invalid_params": None,
+        }
+        assert render_response(response.data) == expected_response
+
+
+class TestAPIExceptions:
+    """Test the exception handler for various API exceptions."""
 
     @pytest.mark.parametrize(
         "error_message, expected_response",
         [
             (
                 "Error message.",
-                {"title": "A server error occurred.", "detail": ["Error message."]},
+                {
+                    "title": "A server error occurred.",
+                    "detail": ["Error message."],
+                    "invalid_params": None,
+                },
             ),
             (
                 [f"Error message {i}." for i in range(2)],
                 {
                     "title": "A server error occurred.",
                     "detail": ["Error message 0.", "Error message 1."],
+                    "invalid_params": None,
                 },
             ),
             (
                 {"field": "Error message."},
                 {
                     "title": "A server error occurred.",
+                    "detail": None,
                     "invalid_params": [{"name": "field", "reason": ["Error message."]}],
                 },
             ),
@@ -80,6 +157,7 @@ class TestErrors:
                 {"field1": {"field2": "Error message."}},
                 {
                     "title": "A server error occurred.",
+                    "detail": None,
                     "invalid_params": [
                         {"name": "field1.field2", "reason": ["Error message."]}
                     ],
@@ -98,19 +176,25 @@ class TestErrors:
         [
             (
                 "Error message.",
-                {"title": "Validation error.", "detail": ["Error message."]},
+                {
+                    "title": "Validation error.",
+                    "detail": ["Error message."],
+                    "invalid_params": None,
+                },
             ),
             (
                 [f"Error message {i}." for i in range(2)],
                 {
                     "title": "Validation error.",
                     "detail": ["Error message 0.", "Error message 1."],
+                    "invalid_params": None,
                 },
             ),
             (
                 {"field": "Error message."},
                 {
                     "title": "Validation error.",
+                    "detail": None,
                     "invalid_params": [{"name": "field", "reason": ["Error message."]}],
                 },
             ),
@@ -118,6 +202,7 @@ class TestErrors:
                 {"field1": {"field2": "Error message."}},
                 {
                     "title": "Validation error.",
+                    "detail": None,
                     "invalid_params": [
                         {"name": "field1.field2", "reason": ["Error message."]}
                     ],
@@ -131,6 +216,7 @@ class TestErrors:
                 },
                 {
                     "title": "Validation error.",
+                    "detail": None,
                     "invalid_params": [
                         {
                             "name": "field1.field2.field3.field4.field5",
@@ -146,6 +232,7 @@ class TestErrors:
                 },
                 {
                     "title": "Validation error.",
+                    "detail": None,
                     "invalid_params": [
                         {"name": "field1.field2", "reason": ["Error message."]},
                         {"name": "field3.field4", "reason": ["Error message."]},
@@ -159,6 +246,7 @@ class TestErrors:
                 },
                 {
                     "title": "Validation error.",
+                    "detail": None,
                     "invalid_params": [
                         {"name": "field1.field2", "reason": ["Error message."]},
                         {"name": "field3.field4.field5", "reason": ["Error message."]},
@@ -184,6 +272,7 @@ class TestSerializerErrors:
 
             expected_response = {
                 "title": "Validation error.",
+                "detail": None,
                 "invalid_params": [
                     {
                         "name": "title",
@@ -215,6 +304,7 @@ class TestSerializerErrors:
 
             expected_response = {
                 "title": "Validation error.",
+                "detail": None,
                 "invalid_params": [
                     {
                         "name": "isbn10",
@@ -239,6 +329,7 @@ class TestSerializerErrors:
             expected_response = {
                 "title": "Validation error.",
                 "detail": [f"Title cannot be {ErrorTriggers.SERIALIZER_VALIDATION}"],
+                "invalid_params": None,
             }
             assert render_response(response.data) == expected_response
 
@@ -262,6 +353,7 @@ class TestModelSerializerErrors:
 
             expected_response = {
                 "title": "Validation error.",
+                "detail": None,
                 "invalid_params": [
                     {
                         "name": "edition",
@@ -290,6 +382,7 @@ class TestModelSerializerErrors:
 
             expected_response = {
                 "title": "Validation error.",
+                "detail": None,
                 "invalid_params": [
                     {
                         "name": "author",
@@ -319,6 +412,7 @@ class TestModelSerializerErrors:
 
             expected_response = {
                 "title": "Validation error.",
+                "detail": None,
                 "invalid_params": [
                     {
                         "name": "libraries",
@@ -345,6 +439,7 @@ class TestModelSerializerErrors:
             expected_response = {
                 "title": "Validation error.",
                 "detail": ["Pages cannot be more than 360."],
+                "invalid_params": None,
             }
             assert render_response(response.data) == expected_response
 
@@ -356,6 +451,7 @@ class TestModelSerializerErrors:
 
             expected_response = {
                 "title": "Validation error.",
+                "detail": None,
                 "invalid_params": [
                     {
                         "name": "author",
@@ -394,6 +490,7 @@ class TestModelSerializerErrors:
             expected_response = {
                 "title": "Validation error.",
                 "detail": [ErrorTriggers.SERIALIZER_METHOD.value],
+                "invalid_params": None,
             }
             assert render_response(response.data) == expected_response
 
@@ -413,6 +510,7 @@ class TestModelSerializerErrors:
             expected_response = {
                 "title": "Validation error.",
                 "detail": [f"Title cannot be {ErrorTriggers.SERIALIZER_VALIDATION}"],
+                "invalid_params": None,
             }
             assert render_response(response.data) == expected_response
 
