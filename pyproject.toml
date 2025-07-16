@@ -72,6 +72,15 @@ sections = [
 ]
 
 
+[tool.pytest.ini_options]
+addopts = ["-q", "-s", "-v", "--create-db", "--nomigrations"]
+python_files = ["test*.py"]
+testpaths = ["integration_tests", "tests"]
+# pytest-django
+DJANGO_SETTINGS_MODULE = "integration_tests.settings.django"
+pythonpath = [".", "integration_tests", "tests"]
+
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
