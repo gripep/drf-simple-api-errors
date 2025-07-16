@@ -12,7 +12,7 @@ A library for [Django Rest Framework](https://www.django-rest-framework.org/) re
 This library was built with [RFC7807](https://tools.ietf.org/html/rfc7807) guidelines in mind, but with a small twist: it defines a "problem detail" as a list instead of a string, but it still serves as a way to include errors in a human-readable and easy-to-parse format for any API consumer.
 Error messages are formatted using RFC7807 keywords and DRF exception data.
 
-Unlike standard DRF, where the error response format varies depending on the error source, this library always returns errors in a consistent, predictable structure to make them easier to handle and parse.
+Unlike standard DRF, where the error response format varies depending on the error source, this library always returns errors in a consistent and predictable structure.
 
 ## What's different?
 
