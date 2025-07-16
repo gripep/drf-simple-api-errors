@@ -1,3 +1,7 @@
+"""
+Types for exception handler and its modules.
+"""
+
 from typing import Dict, List, Optional, Tuple, TypedDict
 
 from rest_framework.request import Request

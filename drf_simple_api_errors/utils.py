@@ -1,3 +1,13 @@
+"""
+Utility functions for handling API errors and formatting responses.
+
+Functions:
+    - `camelize`:
+        Converts a snake_case string to camelCase according to the CAMELIZE setting.
+    - `flatten_dict`: Flattens a nested dictionary into a single-level dictionary
+        according to the specified FIELDS_SEPARATOR setting.
+"""
+
 import re
 
 from drf_simple_api_errors.settings import api_settings
@@ -11,7 +21,7 @@ def camelize(s: str) -> str:
     Args:
         s (str): The string to convert.
     Returns:
-        str: The camelCase version of the string, or the original if CAMELIZE is `False`.
+        str: The camelCase version of a string, or the original if CAMELIZE is `False`.
     """
 
     def underscore_to_camel(match: re.Match) -> str:

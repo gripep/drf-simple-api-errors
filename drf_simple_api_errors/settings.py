@@ -1,3 +1,8 @@
+"""
+Settings for the DRF Simple API Errors package.
+This module defines the default settings and user settings for the package.
+"""
+
 from django.conf import settings
 from rest_framework.settings import APISettings
 

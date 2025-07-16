@@ -1,5 +1,6 @@
 """
-This module provides functionality to format API exceptions into a structured error response.
+This module provides functionality to format API exceptions into a structured
+error response.
 
 It defines the `APIErrorResponse` class, which represents
 the structure of the error response, and the `format_exc` function, which
@@ -22,7 +23,6 @@ from rest_framework import exceptions
 from rest_framework.settings import api_settings as drf_api_settings
 
 from drf_simple_api_errors import utils
-from drf_simple_api_errors.settings import api_settings
 from drf_simple_api_errors.types import APIErrorResponseDict
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ class APIErrorResponse:
         - invalid_params: A list of invalid parameters, if any
     """
 
-    title: str = dataclass_field(init=False)
+    title: str = dataclass_field(default="")
     detail: Optional[List[str]] = dataclass_field(default=None)
     invalid_params: Optional[List[InvalidParam]] = dataclass_field(default=None)
 
