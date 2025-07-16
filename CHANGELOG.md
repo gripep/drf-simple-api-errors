@@ -16,7 +16,7 @@ Changes:
 
 Changes:
 
-- Add docstrings to handlers
+- Add docstrings
 - Improve Makefile
 - Improve README
 
@@ -24,19 +24,21 @@ Changes:
 
 Changes:
 
-- Update README
-- Improve tests
 - Fix DRF API settings initialization
+- Improve tests
+- Update README
 
 ## [2.0.0] - 2025-07-11
 
 Breaking changes:
 
-- The API error response now always includes the keys: `title`, `detail`, and `invalid_param`. The `title` key is always populated, while `detail` and `invalid_param` may be `null` depending on the error source.
+- The API error response now **always** includes the keys: `title`, `detail`, and `invalid_param`. The `title` key is always populated, while `detail` and `invalid_param` may be `null` depending on the error source.
 - Drop support for python 3.8
 
 Changes:
 
 - Improve code modularity and readability
+- Split tests in unittest and integration tests
+- Improve test coverage
 - Update Makefile
 - Update README

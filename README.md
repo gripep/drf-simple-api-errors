@@ -12,7 +12,7 @@ A library for [Django Rest Framework](https://www.django-rest-framework.org/) re
 This library was built with [RFC7807](https://tools.ietf.org/html/rfc7807) guidelines in mind, but with a small twist: it defines a "problem detail" as a list instead of a string, but it still serves as a way to include errors in a human-readable and easy-to-parse format for any API consumer.
 Error messages are formatted using RFC7807 keywords and DRF exception data.
 
-This library always returns errors in a consistent, predictable structure, making them easier to handle and parse, unlike standard DRF, where error response formats vary depending on the error source.
+Unlike standard DRF, where the error response format varies depending on the error source, this library always returns errors in a consistent, predictable structure to make them easier to handle and parse.
 
 ## What's different?
 
@@ -134,7 +134,7 @@ API error messages will include the following keys:
 
 ## Settings
 
-Default available settings:
+Default settings:
 
 ```python
 DRF_SIMPLE_API_ERRORS = {
@@ -171,88 +171,22 @@ If `CAMELIZE` is set to `True`:
 
 Support for exceptions that differ from the standard structure of the Django Rest Framework.
 
-For instance, you may want to specify you own exception:
+For example, if you need to customize how a specific exception is handled or want to format an existing exception differently, you can create your own handler.
 
-```python
-class AuthenticationFailed(exceptions.AuthenticationFailed):
-    def __init__(self, detail=None, code=None):
-        """
-        Builds a detail dictionary for the error to give more information
-        to API users.
-        """
-        detail_dict = {"detail": self.default_detail, "code": self.default_code}
-
-        if isinstance(detail, dict):
-            detail_dict.update(detail)
-        elif detail is not None:
-            detail_dict["detail"] = detail
-
-        if code is not None:
-            detail_dict["code"] = code
-
-        super().__init__(detail_dict)
-```
-
-Use exception in code:
-
-```python
-def my_func():
-    raise AuthenticationFailed(
-        {
-            "detail": _("Error message."),
-            "messages": [
-                {
-                    "metadata": "metadata_data",
-                    "type": "type_name",
-                    "message": "error message",
-                }
-            ],
-        }
-    )
-```
-
-This will result in:
-
-```python
-AuthenticationFailed(
-    {
-        "detail": "Error message.",
-        "messages": [
-            {
-                "metadata": "metadata_data",
-                "type": "type_name",
-                "message": "error message",
-            }
-        ],
-    }
-)
-```
-
-You can handle this by creating a `handlers.py` file and specifying an handler for your use case:
-
-```python
-def handle_exc_custom_authentication_failed(exc):
-    from path.to.my.exceptions import AuthenticationFailed
-
-    if isinstance(exc, AuthenticationFailed):
-        try:
-            exc.detail = exc.detail["messages"][0]["message"]
-        except (KeyError, IndexError):
-            exc.detail = exc.detail["detail"]
-
-    return exc
-```
+To customize error handling for your project, simply create a new file (for example, `extra_handlers.py`) and define your own handler functions. This approach lets you tailor error responses to fit your specific needs.
 
 Then add it to the `EXTRA_HANDLERS` list in this package settings:
 
 ```python
 DRF_SIMPLE_API_ERRORS = {
     "EXTRA_HANDLERS": [
-        "path.to.my.handlers.handle_exc_custom_authentication_failed",
+        "path.to.my.extra_handlers.custom_handler",
         # ...
     ]
 }
 ```
+
+For reference, this library uses the same pattern for its own extra handlers [here](drf_simple_api_errors/extra_handlers.py).
 
 - #### FIELDS_SEPARATOR
 
