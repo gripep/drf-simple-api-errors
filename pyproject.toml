@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "drf-simple-api-errors"
-version = "1.0.3"
+version = "2.0.0"
 description = "A library for Django Rest Framework returning consistent and easy-to-parse API error messages."
 authors = ["Gian <30044863+gripep@users.noreply.github.com>"]
 license = "MIT"
@@ -23,11 +23,11 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     'Programming Language :: Python',
-    'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
     'Framework :: Django',
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -36,7 +36,7 @@ include = ["drf_simple_api_errors", "LICENSE.md"]
 
 
 [tool.poetry.dependencies]
-python = ">=3.8.1,<4.0"
+python = ">=3.9,<4.0"
 
 Django = ">=2.2"
 djangorestframework = ">=3.0"
@@ -70,6 +70,15 @@ sections = [
     "FIRSTPARTY",
     "LOCALFOLDER",
 ]
+
+
+[tool.pytest.ini_options]
+addopts = ["-q", "-s", "-v", "--create-db", "--nomigrations"]
+python_files = ["test*.py"]
+testpaths = ["integration_tests", "tests"]
+# pytest-django
+DJANGO_SETTINGS_MODULE = "integration_tests.settings.django"
+pythonpath = [".", "integration_tests", "tests"]
 
 
 [build-system]

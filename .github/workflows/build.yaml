@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - name: Checkout source code
@@ -28,7 +28,7 @@ jobs:
           python -m pip install tox tox-gh-actions
 
       - name: Run tox
-        run: tox
+        run: tox -v
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1

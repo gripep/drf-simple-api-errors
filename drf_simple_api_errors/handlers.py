@@ -1,82 +1,90 @@
-import copy
-import logging
-from typing import Dict, List, Union
+"""
+Handlers to deal with different types of exceptions and format them into
+API error responses, and other utility functions.
 
-from rest_framework.exceptions import APIException
-from rest_framework.settings import api_settings as drf_api_settings
+Functions:
+    - `apply_extra_handlers`:
+        Applies any extra exception handlers defined in the settings.
+    - `convert_django_exc_to_drf_api_exc`:
+        Converts Django exceptions to DRF APIException, if possible.
+    - `get_response_headers`: Gets the response headers for the given exception.
+"""
 
-from .settings import api_settings
-from .utils import camelize, flatten_dict
+from typing import Dict, Union
 
-logger = logging.getLogger(__name__)
+from django.core.exceptions import (
+    PermissionDenied,
+    ValidationError as DjangoValidationError,
+)
+from django.http import Http404
+from rest_framework import exceptions
+from rest_framework.serializers import as_serializer_error
+
+from drf_simple_api_errors import extra_handlers
+from drf_simple_api_errors.settings import api_settings
 
 
-def exc_detail_handler(data: Dict, exc_detail: Union[Dict, List]) -> Dict:
+def apply_extra_handlers(exc: Exception):
     """
-    Handle the exception detail and set it to the `data` dictionary.
+    Apply any extra exception handlers defined in the settings.
 
-    If the `exc_detail` is a dictionary, it will set to the `data` dictionary.
-    If the `exc_detail` is a list, it will be set to the `data` dictionary.
+    Args:
+        exc (Exception): The exception to handle.
     """
-    logger.debug("`exc_detail` is instance of %s" % type(exc_detail))
+    # Get the default extra handlers and the ones defined in the settings.
+    # The default handlers are always applied to ensure that exceptions
+    # are formatted correctly.
+    default_extra_handlers = [
+        extra_handlers.set_default_detail_to_formatted_exc_default_code
+    ]
+    settings_extra_handlers = api_settings.EXTRA_HANDLERS
 
-    if isinstance(exc_detail, dict):
-        __exc_detail_as_dict_handler(data, exc_detail)
-    elif isinstance(exc_detail, list):
-        __exc_detail_as_list_handler(data, exc_detail)
-
-    return data
-
-
-def __exc_detail_as_dict_handler(data: Dict, exc_detail: Dict):
-    """Handle the exception detail as a dictionary."""
-    exc_detail = flatten_dict(copy.deepcopy(exc_detail))
-
-    invalid_params = []
-    non_field_errors = []
-    for field, error in exc_detail.items():
-        error_detail = {}
-
-        reason = error if not isinstance(error, list) or len(error) > 1 else error[0]
-
-        if field in {drf_api_settings.NON_FIELD_ERRORS_KEY, "__all__"}:
-            if isinstance(reason, list):
-                non_field_errors.extend(reason)
-            else:
-                non_field_errors.append(reason)
-        else:
-            error_detail["name"] = (
-                field if not api_settings.CAMELIZE else camelize(field)
-            )
-            if isinstance(reason, list):
-                error_detail["reason"] = reason
-            else:
-                error_detail["reason"] = [reason]
-
-            invalid_params.append(error_detail)
-
-    if invalid_params:
-        data["invalid_params"] = invalid_params
-
-    if non_field_errors:
-        data["detail"] = non_field_errors
+    extra_handlers_to_apply = default_extra_handlers + settings_extra_handlers
+    if extra_handlers_to_apply:
+        for handler in extra_handlers_to_apply:
+            handler(exc)
 
 
-def __exc_detail_as_list_handler(data: Dict, exc_detail: List):
-    """Handle the exception detail as a list."""
-    detail = []
-    for error in exc_detail:
-        detail.append(error if not isinstance(error, list) else error[0])
+def convert_django_exc_to_drf_api_exc(
+    exc: Exception,
+) -> Union[exceptions.APIException, Exception]:
+    """
+    Convert Django exceptions to DRF APIException, if possible.
 
-    if detail:
-        data["detail"] = detail
+    Args:
+        exc (Exception): The exception to convert.
+
+    Returns:
+        exceptions.APIException | Exception: The converted exception or the original.
+    """
+    if isinstance(exc, DjangoValidationError):
+        return exceptions.ValidationError(as_serializer_error(exc))
+
+    if isinstance(exc, Http404):
+        return exceptions.NotFound()
+
+    if isinstance(exc, PermissionDenied):
+        return exceptions.PermissionDenied()
+
+    return exc
 
 
-def is_exc_detail_same_as_default_detail(exc: APIException) -> bool:
-    """Check if the exception detail is the same as the default detail."""
-    return (isinstance(exc.detail, str) and exc.detail == exc.default_detail) or (
-        isinstance(exc.detail, list)
-        and len(exc.detail) == 1
-        and isinstance(exc.detail[0], str)
-        and exc.detail[0] == exc.default_detail
-    )
+def get_response_headers(exc: exceptions.APIException) -> Dict:
+    """
+    Get the response headers for the given exception.
+
+    Args:
+        exc (exceptions.APIException): The exception to get headers for.
+
+    Returns:
+        dict: A dictionary containing the response headers.
+    """
+    # This is from DRF's default exception handler.
+    # https://github.com/encode/django-rest-framework/blob/48a21aa0eb3a95d32456c2a927eff9552a04231e/rest_framework/views.py#L87-L91
+    headers = {}
+    if getattr(exc, "auth_header", None):
+        headers["WWW-Authenticate"] = exc.auth_header
+    if getattr(exc, "wait", None):
+        headers["Retry-After"] = "%d" % exc.wait
+
+    return headers

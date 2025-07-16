@@ -39,7 +39,7 @@ MIDDLEWARE = [
 ]
 
 
-ROOT_URLCONF = "config.urls"
+ROOT_URLCONF = "settings.urls"
 
 
 TEMPLATES = [

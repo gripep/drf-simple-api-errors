@@ -9,7 +9,10 @@
 
 A library for [Django Rest Framework](https://www.django-rest-framework.org/) returning **consistent, predictable and easy-to-parse API error messages**.
 
-This library was built with [RFC7807](https://tools.ietf.org/html/rfc7807) guidelines in mind, but with a small twist: it defines a "problem detail" as a list, but it still serves as a way to include errors in a predictable and easy-to-parse format for any API consumer. Error messages are formatted using RFC7807 keywords and DRF exception data.
+This library was built with [RFC7807](https://tools.ietf.org/html/rfc7807) guidelines in mind, but with a small twist: it defines a "problem detail" as a list instead of a string, but it still serves as a way to include errors in a human-readable and easy-to-parse format for any API consumer.
+Error messages are formatted using RFC7807 keywords and DRF exception data.
+
+Unlike standard DRF, where the error response format varies depending on the error source, this library always returns errors in a consistent and predictable structure.
 
 ## What's different?
 
@@ -17,7 +20,7 @@ Compared to other similar and popular libraries, this library:
 
 - Is based on RFC7807 guidelines
 - Aims to provide not only a standardized format for error details, but also human-readable error messages (perfect for both internal and public APIs)
-- Transforms both `django.core.exceptions.ValidationError` and `rest_framework.errors.ValidationError` to API errors, so you don't have to handle error raised by services/domain logic, `clean()`, or other functions/methods
+- Transforms both `django.core.exceptions.ValidationError` and `rest_framework.errors.ValidationError` to API errors, so you don't have to handle error raised by services/domain logic, `clean()`, etc.
 
 ## Table of Contents
 
@@ -57,13 +60,13 @@ REST_FRAMEWORK = {
 
 ### Error structure overview
 
-API error messages typically include the following keys:
+API error messages will include the following keys:
 
-- `"title"` (`str`): A brief summary that describes the problem type
-- `"detail"` (`list[str] | None`): A list of specific explanations related to the problem
-- `"invalid_params"` (`list[dict] | None`): A list of dict containing details about parameters that were invalid or malformed in the request. Each dict within this list provides:
-  - `"name"` (`str`): The name of the parameter that was found to be invalid
-  - `"reasons"` (`list[str]`): A list of strings describing the specific reasons why the parameter was considered invalid or malformed
+- `"title"` (`str`): A brief summary that describes the problem type.
+- `"detail"` (`list[str] | None`): A list of specific explanations related to the problem, if any.
+- `"invalid_params"` (`list[dict] | None`): A list of dict containing details about parameters that were invalid or malformed in the request, if any. Each dict within this list provides:
+  - `"name"` (`str`): The name of the parameter that was found to be invalid.
+  - `"reasons"` (`list[str]`): A list of strings describing the specific reasons why the parameter was considered invalid or malformed.
 
 ```json
 {
@@ -91,17 +94,18 @@ API error messages typically include the following keys:
 
 ```json
 {
-    "title": "Error message.",
-    "invalid_params": [
-        {
-            "name": "field_name",
-            "reason": [
-                "error",
-                ...
-            ]
-        },
-        ...
-    ]
+  "title": "Error message.",
+  "details": null,
+  "invalid_params": [
+    {
+      "name": "field_name",
+      "reason": [
+        "error"
+        // ...
+      ]
+    }
+    // ...
+  ]
 }
 ```
 
@@ -111,9 +115,10 @@ API error messages typically include the following keys:
 {
   "title": "Error message.",
   "detail": [
-    "error",
-    ...
-  ]
+    "error"
+    // ...
+  ],
+  "invalid_params": null
 }
 ```
 
@@ -121,13 +126,15 @@ API error messages typically include the following keys:
 
 ```json
 {
-  "title": "Error message."
+  "title": "Error message.",
+  "detail": null,
+  "invalid_params": null
 }
 ```
 
 ## Settings
 
-Default available settings:
+Default settings:
 
 ```python
 DRF_SIMPLE_API_ERRORS = {
@@ -146,15 +153,16 @@ If `CAMELIZE` is set to `True`:
 ```json
 {
   "title": "Error message.",
+  "details": null,
   "invalidParams": [
     {
       "name": "fieldName",
       "reason": [
-        "error",
-        ...
+        "error"
+        // ...
       ]
     }
-    ...
+    // ...
   ]
 }
 ```
@@ -163,88 +171,22 @@ If `CAMELIZE` is set to `True`:
 
 Support for exceptions that differ from the standard structure of the Django Rest Framework.
 
-For instance, you may want to specify you own exception:
+For example, if you need to customize how a specific exception is handled or want to format an existing exception differently, you can create your own handler.
 
-```python
-class AuthenticationFailed(exceptions.AuthenticationFailed):
-    def __init__(self, detail=None, code=None):
-        """
-        Builds a detail dictionary for the error to give more information
-        to API users.
-        """
-        detail_dict = {"detail": self.default_detail, "code": self.default_code}
-
-        if isinstance(detail, dict):
-            detail_dict.update(detail)
-        elif detail is not None:
-            detail_dict["detail"] = detail
-
-        if code is not None:
-            detail_dict["code"] = code
-
-        super().__init__(detail_dict)
-```
-
-Use exception in code:
-
-```python
-def my_func():
-    raise AuthenticationFailed(
-        {
-            "detail": _("Error message."),
-            "messages": [
-                {
-                    "metadata": "metadata_data",
-                    "type": "type_name",
-                    "message": "error message",
-                }
-            ],
-        }
-    )
-```
-
-This will result in:
-
-```python
-AuthenticationFailed(
-    {
-        "detail": "Error message.",
-        "messages": [
-            {
-                "metadata": "metadata_data",
-                "type": "type_name",
-                "message": "error message",
-            }
-        ],
-    }
-)
-```
-
-You can handle this by creating a `handlers.py` file and specifying an handler for your use case:
-
-```python
-def handle_exc_custom_authentication_failed(exc):
-    from path.to.my.exceptions import AuthenticationFailed
-
-    if isinstance(exc, AuthenticationFailed):
-        try:
-            exc.detail = exc.detail["messages"][0]["message"]
-        except (KeyError, IndexError):
-            exc.detail = exc.detail["detail"]
-
-    return exc
-```
+To customize error handling for your project, simply create a new file (for example, `extra_handlers.py`) and define your own handler functions. This approach lets you tailor error responses to fit your specific needs.
 
 Then add it to the `EXTRA_HANDLERS` list in this package settings:
 
 ```python
 DRF_SIMPLE_API_ERRORS = {
     "EXTRA_HANDLERS": [
-        "path.to.my.handlers.handle_exc_custom_authentication_failed",
+        "path.to.my.extra_handlers.custom_handler",
         # ...
     ]
 }
 ```
+
+For reference, this library uses the same pattern for its own extra handlers [here](drf_simple_api_errors/extra_handlers.py).
 
 - #### FIELDS_SEPARATOR
 
@@ -274,11 +216,17 @@ All the necessary commands are included in the `Makefile`.
 
 We are using `tox` and `poetry` to run tests in every supported Python version.
 
-Run test with the commands below:
+Run test during development with the commands below:
 
 ```
-make install
+make install  # only if necessary
 make test
+```
+
+Finally, run `tox` to ensure the changes work for every supported python version:
+
+```
+tox -v
 ```
 
 ## Support
