@@ -14,6 +14,9 @@ class TestCamelize:
             ("first_name", "firstName"),
             ("family_tree_name", "familyTreeName"),
             ("very_long_last_name_and_first_name", "veryLongLastNameAndFirstName"),
+            # This is a special case where the underscore is at the start
+            # and should be removed, and the next character should be capitalized.
+            ("_special", "Special"),
         ],
     )
     def test_with_camelize_settings_true(self, mocker, field_input, expected_output):
@@ -33,6 +36,7 @@ class TestCamelize:
                 "very_long_last_name_and_first_name",
                 "very_long_last_name_and_first_name",
             ),
+            ("_special", "_special"),
         ],
     )
     def test_with_camelize_settings_false(self, field_input, expected_output):

@@ -44,6 +44,8 @@ def exception_handler(exc: Exception, context: ExceptionHandlerContext) -> Respo
     # This is because it's not good practice to expose the details of
     # unhandled exceptions to the client.
     if not isinstance(exc, exceptions.APIException):
+        # Raise a ServerError exception instead of returning None, because
+        # we can control the response format this way.
         logger.info("Server error (500) from unexpected exception.", exc_info=True)
         return ServerError
 

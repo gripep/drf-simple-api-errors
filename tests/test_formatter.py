@@ -207,13 +207,24 @@ class TestFormatExc:
         assert data["invalid_params"] is None
 
     @pytest.mark.parametrize(
-        "exc_detail",
+        "exc_detail, expected_detail",
         [
-            "This is a non-field error.",
-            ["This is a non-field error."],
+            ("This is a non-field error.", ["This is a non-field error."]),
+            (["This is a non-field error."], ["This is a non-field error."]),
+            (
+                ["This is a non-field error.", "Another error."],
+                ["This is a non-field error.", "Another error."],
+            ),
+            (
+                [
+                    "This is a non-field error.",
+                    ["Another error.", "Yet another error."],
+                ],
+                ["This is a non-field error.", "Another error.", "Yet another error."],
+            ),
         ],
     )
-    def test_exc_detail_is_list_formats(self, exc_detail):
+    def test_exc_detail_is_list_formats(self, exc_detail, expected_detail):
         """
         Test that when the exception detail is a list or a string,
         the detail is set to the error messages list and invalid_params is `None`.
@@ -221,7 +232,7 @@ class TestFormatExc:
         exc = drf_exceptions.ValidationError(exc_detail)
 
         data = formatter.format_exc(exc)
-        assert data["detail"] == ["This is a non-field error."]
+        assert data["detail"] == expected_detail
         assert data["invalid_params"] is None
 
     def test_format_exc_detail_is_list_error_when_unexpected_type(self):

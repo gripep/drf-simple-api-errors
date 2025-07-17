@@ -4,6 +4,7 @@ from rest_framework import exceptions as drf_exceptions
 
 import pytest
 
+from drf_simple_api_errors import exceptions
 from drf_simple_api_errors.exception_handler import exception_handler
 from tests.utils import render_response
 
@@ -399,3 +400,12 @@ class TestExceptionHandler:
             "invalid_params": None,
         }
         assert render_response(response.data) == expected_response
+
+    def test_unexpected_exception(self, mocker):
+        """
+        Test the exception handler for unexpected exceptions.
+        This should return a 500 Internal Server Error response.
+        """
+        exc = Exception("Unexpected error")
+        response = exception_handler(exc, mocker.Mock())
+        assert response is exceptions.ServerError
