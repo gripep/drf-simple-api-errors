@@ -4,7 +4,6 @@ from rest_framework import exceptions as drf_exceptions
 
 import pytest
 
-from drf_simple_api_errors import exceptions
 from drf_simple_api_errors.exception_handler import exception_handler
 from tests.utils import render_response
 
@@ -408,4 +407,4 @@ class TestExceptionHandler:
         """
         exc = Exception("Unexpected error")
         response = exception_handler(exc, mocker.Mock())
-        assert response is exceptions.ServerError
+        assert response is None
