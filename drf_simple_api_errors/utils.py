@@ -29,7 +29,7 @@ def camelize(s: str) -> str:
         if len(group) == 3:
             return group[0] + group[2].upper()
         else:
-            return group[1].upper()
+            return group
 
     if not api_settings.CAMELIZE:
         return s
