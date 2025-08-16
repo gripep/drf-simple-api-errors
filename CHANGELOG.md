@@ -1,34 +1,18 @@
 # Change Log
 
-## [1.0.0] - 2024-04-26
+## [2.1.0] - 2025-08-17
 
 Changes:
 
-- First release on PyPI
+- Camelize would capitalize words starting with an underscore. It now leaves them unchanged.
 
-## [1.0.1] - 2024-04-30
+  - Old: `"_special"` -> `"Special"`
+  - Now: `"_special"` -> `"_special"`
 
-Changes:
-
-- Upgrade dependencies
-
-## [1.0.2] - 2024-09-08
-
-Changes:
-
-- Add docstrings
-- Improve Makefile
-- Improve README
-
-## [1.0.3] - 2025-03-16
-
-Changes:
-
-- Fix DRF API settings initialization
-- Improve tests
+- Improve test coverage
 - Update README
 
-## [2.0.0] - 2025-07-11
+## [2.0.0] - 2025-07-16
 
 Breaking changes:
 
@@ -42,3 +26,31 @@ Changes:
 - Improve test coverage
 - Update Makefile
 - Update README
+
+## [1.0.3] - 2025-03-16
+
+Changes:
+
+- Fix DRF API settings initialization
+- Improve tests
+- Update README
+
+## [1.0.2] - 2024-09-08
+
+Changes:
+
+- Add docstrings
+- Improve Makefile
+- Improve README
+
+## [1.0.1] - 2024-04-30
+
+Changes:
+
+- Upgrade dependencies
+
+## [1.0.0] - 2024-04-26
+
+Changes:
+
+- First release on PyPI
