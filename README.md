@@ -70,21 +70,14 @@ API error messages will include the following keys:
 
 ```json
 {
-    "title": "Error message.",
-    "detail": [
-        "error",
-        ...
-    ],
-    "invalid_params": [
-        {
-            "name": "field_name",
-            "reason": [
-                "error",
-                ...
-            ]
-        },
-        ...
-    ]
+  "title": "Error message.",
+  "detail": ["error"],
+  "invalid_params": [
+    {
+      "name": "field_name",
+      "reason": ["error"]
+    }
+  ]
 }
 ```
 
@@ -99,12 +92,8 @@ API error messages will include the following keys:
   "invalid_params": [
     {
       "name": "field_name",
-      "reason": [
-        "error"
-        // ...
-      ]
+      "reason": ["error"]
     }
-    // ...
   ]
 }
 ```
@@ -114,10 +103,7 @@ API error messages will include the following keys:
 ```json
 {
   "title": "Error message.",
-  "detail": [
-    "error"
-    // ...
-  ],
+  "detail": ["error"],
   "invalid_params": null
 }
 ```
@@ -157,12 +143,8 @@ If `CAMELIZE` is set to `True`:
   "invalidParams": [
     {
       "name": "fieldName",
-      "reason": [
-        "error"
-        // ...
-      ]
+      "reason": ["error"]
     }
-    // ...
   ]
 }
 ```
@@ -226,6 +208,7 @@ make test
 Finally, run `tox` to ensure the changes work for every supported python version:
 
 ```
+pip install tox  # only if necessary
 tox -v
 ```
 
