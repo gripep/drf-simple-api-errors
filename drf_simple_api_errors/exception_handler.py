@@ -1,17 +1,19 @@
 import logging
+from typing import Optional
 
 from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework.views import set_rollback
 
 from drf_simple_api_errors import formatter, handlers
-from drf_simple_api_errors.exceptions import ServerError
 from drf_simple_api_errors.types import ExceptionHandlerContext
 
 logger = logging.getLogger(__name__)
 
 
-def exception_handler(exc: Exception, context: ExceptionHandlerContext) -> Response:
+def exception_handler(
+    exc: Exception, context: ExceptionHandlerContext
+) -> Optional[Response]:
     """
     Custom exception handler for DRF.
 
@@ -44,8 +46,7 @@ def exception_handler(exc: Exception, context: ExceptionHandlerContext) -> Respo
     # This is because it's not good practice to expose the details of
     # unhandled exceptions to the client.
     if not isinstance(exc, exceptions.APIException):
-        logger.info("Server error (500) from unexpected exception.", exc_info=True)
-        return ServerError
+        return None
 
     # Get the API response headers from the exception.
     headers = handlers.get_response_headers(exc)

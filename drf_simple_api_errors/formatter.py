@@ -101,12 +101,10 @@ def format_exc(exc: exceptions.APIException) -> APIErrorResponseDict:
     # Create the API error response based on the exception detail...
     if isinstance(exc_detail, dict):
         return _format_exc_detail_dict(data, exc_detail)
-    elif isinstance(exc_detail, list):
-        # If the exception detail is a list, we will return all the errors
-        # in a single list.
-        return _format_exc_detail_list(data, exc_detail)
     else:
-        return data.to_dict()
+        # If the exception detail in not a dict, it must be a list, and
+        # we will return all the errors in a single list.
+        return _format_exc_detail_list(data, exc_detail)
 
 
 def _format_exc_detail_dict(
