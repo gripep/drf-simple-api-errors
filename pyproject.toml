@@ -33,6 +33,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 include = ["drf_simple_api_errors", "LICENSE.md"]
+requires-poetry = "^2.1"
 
 
 [tool.poetry.dependencies]
@@ -83,5 +84,5 @@ pythonpath = [".", "integration_tests", "tests"]
 
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
