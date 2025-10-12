@@ -42,7 +42,7 @@ class TestApplyExtraHandlers:
         dummy_module = types.SimpleNamespace(mock_handler=mock_handler)
         mock_importlib_import_module.return_value = dummy_module
         # Patch the settings to include the test mock handler
-        mocker.patch(
+        monkeypatch.setattr(
             "drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS",
             # Add dummy path to have at least one mock handler to import from a string
             ["path.to.module.mock_handler"],
@@ -55,7 +55,9 @@ class TestApplyExtraHandlers:
         assert extra_handlers_applied == 1
         mock_handler.assert_called_once_with(exc)
 
-    def test_extra_handlers_calls_multiple(self, mocker, mock_importlib_import_module):
+    def test_extra_handlers_calls_multiple(
+        self, monkeypatch, mocker, mock_importlib_import_module
+    ):
         """
         Test that both default and settings extra handlers are called correctly.
         """
@@ -64,7 +66,7 @@ class TestApplyExtraHandlers:
         dummy_module = types.SimpleNamespace(mock_handler=mock_handler)
         mock_importlib_import_module.return_value = dummy_module
         # Patch the settings to include the test mock handler
-        mocker.patch(
+        monkeypatch.setattr(
             "drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS",
             # Add dummy path to have at least one mock handler to import from a string
             ["path.to.module.mock_handler"],
@@ -79,12 +81,12 @@ class TestApplyExtraHandlers:
         )  # 1 for the settings handler
         mock_handler.assert_called_once_with(exc)
 
-    def test_extra_handlers_value_error_on_non_string_import(self, mocker):
+    def test_extra_handlers_value_error_on_non_string_import(self, monkeypatch, mocker):
         """
         Test that a ValueError is raised when EXTRA_HANDLERS contains
         a non-string import.
         """
-        mocker.patch(
+        monkeypatch.setattr(
             "drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS",
             [mocker.MagicMock()],
         )
@@ -95,13 +97,13 @@ class TestApplyExtraHandlers:
         assert "EXTRA_HANDLERS must be a list of strings" in str(e.value)
 
     def test_extra_handlers_value_error_when_path_to_extra_handler_not_found(
-        self, mocker
+        self, monkeypatch, mocker
     ):
         """
         Test that a ValueError is raised when the path to the extra handler
         does not exist.
         """
-        mocker.patch(
+        monkeypatch.setattr(
             "drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS",
             ["path.to.non_existent_handler"],
         )
@@ -112,7 +114,7 @@ class TestApplyExtraHandlers:
         assert "Path path.to.non_existent_handler not found." in str(e.value)
 
     def test_extra_handlers_value_error_when_extra_handler_is_none(
-        self, mocker, mock_importlib_import_module
+        self, monkeypatch, mocker, mock_importlib_import_module
     ):
         """
         Test that a ValueError is raised when the extra handler is None.
@@ -120,7 +122,7 @@ class TestApplyExtraHandlers:
         # Make importlib.import_module return a module without the expected attribute
         dummy_module = types.SimpleNamespace()
         mock_importlib_import_module.return_value = dummy_module
-        mocker.patch(
+        monkeypatch.setattr(
             "drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS",
             ["path.to.module.non_existent_handler"],
         )
@@ -131,7 +133,7 @@ class TestApplyExtraHandlers:
         assert "Handler non_existent_handler not found." in str(e.value)
 
     def test_extra_handlers_value_error_when_extra_handler_not_callable(
-        self, mocker, mock_importlib_import_module
+        self, monkeypatch, mocker, mock_importlib_import_module
     ):
         """
         Test that a ValueError is raised when the extra handler is not callable.
@@ -139,7 +141,7 @@ class TestApplyExtraHandlers:
         # Make importlib.import_module return a non-callable attribute
         dummy_module = types.SimpleNamespace(mock_handler="not_a_function")
         mock_importlib_import_module.return_value = dummy_module
-        mocker.patch(
+        monkeypatch.setattr(
             "drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS",
             ["path.to.module.mock_handler"],
         )
