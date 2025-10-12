@@ -10,7 +10,8 @@ Functions:
     - `get_response_headers`: Gets the response headers for the given exception.
 """
 
-from typing import Dict, Union
+import importlib
+from typing import Callable, Dict, Union
 
 from django.core.exceptions import (
     PermissionDenied,
@@ -23,6 +24,11 @@ from rest_framework.serializers import as_serializer_error
 from drf_simple_api_errors import extra_handlers
 from drf_simple_api_errors.settings import api_settings
 
+DEFAULT_EXTRA_HANDLERS = [
+    extra_handlers.set_default_detail_to_formatted_exc_default_code
+]
+"""Default extra handlers to always apply."""
+
 
 def apply_extra_handlers(exc: Exception):
     """
@@ -30,19 +36,44 @@ def apply_extra_handlers(exc: Exception):
 
     Args:
         exc (Exception): The exception to handle.
+
+    Returns:
+        int: The number of handlers applied (this is mainly for unit testing).
     """
     # Get the default extra handlers and the ones defined in the settings.
     # The default handlers are always applied to ensure that exceptions
     # are formatted correctly.
-    default_extra_handlers = [
-        extra_handlers.set_default_detail_to_formatted_exc_default_code
-    ]
-    settings_extra_handlers = api_settings.EXTRA_HANDLERS
+    # Resolve the settings extra handlers.
+    # The settings extra handlers is a list of strings representing
+    # the import path to the handler function.
+    # This allows for lazy loading of the handlers.
+    settings_extra_handlers: list[Callable] = []
+    for handler_path in api_settings.EXTRA_HANDLERS or []:
+        if not isinstance(handler_path, str):
+            raise ValueError(
+                f"EXTRA_HANDLERS must be a list of strings. Found: {type(handler_path)}"
+            )
 
-    extra_handlers_to_apply = default_extra_handlers + settings_extra_handlers
+        module_path, func_name = handler_path.rsplit(".", 1)
+        try:
+            module = importlib.import_module(module_path)
+        except ModuleNotFoundError:
+            raise ValueError(f"Path {handler_path} not found.")
+
+        func = getattr(module, func_name, None)
+        if func is None:
+            raise ValueError(f"Handler {func_name} not found.")
+        if not callable(func):
+            raise ValueError(f"Handler {func_name} is not callable.")
+        else:
+            settings_extra_handlers.append(func)
+
+    extra_handlers_to_apply = DEFAULT_EXTRA_HANDLERS + settings_extra_handlers
     if extra_handlers_to_apply:
         for handler in extra_handlers_to_apply:
             handler(exc)
+
+    return len(extra_handlers_to_apply)
 
 
 def convert_django_exc_to_drf_api_exc(

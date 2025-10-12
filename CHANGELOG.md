@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.1.1] - 2025-10-12
+
+Changes:
+
+- Fixed a bug where custom extra handler strings in settings could not be properly resolved, imported, or called.
+- Dev: Update the dependencies
+
 ## [2.1.0] - 2025-08-17
 
 Changes:
