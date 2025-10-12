@@ -1,3 +1,6 @@
+import importlib
+import types
+
 from django.core import exceptions as django_exceptions
 from django.http import Http404
 from rest_framework import exceptions as drf_exceptions
@@ -10,35 +13,141 @@ from drf_simple_api_errors import handlers
 class TestApplyExtraHandlers:
     """Test cases for the apply_extra_handlers function in handlers module."""
 
-    def test_extra_handlers_called(self, mocker):
-        """
-        Test that extra handlers are called with the exception.
+    @pytest.fixture
+    def mock_importlib_import_module(self, mocker):
+        """Mock importlib.import_module to control the import behavior in tests."""
+        return mocker.patch.object(importlib, "import_module")
 
-        Testing with multiple handlers to ensure all are invoked, and this gives
-        confidence one or more than two handlers can be used correctly.
-        """
-        mock_extra_handler = mocker.MagicMock()
-        mock_another_extra_handler = mocker.MagicMock()
+    def test_calls_expected_default_handlers(self, mocker):
+        """Test that all the expected default handlers are called.
 
+        This is a sanity check to ensure that the default handlers are always called.
+        """
+        # Always make sure that the settings handlers are empty for this test
+        # to isolate the default handlers.
+        mocker.patch("drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS", [])
+
+        extra_handlers_applied = handlers.apply_extra_handlers(Exception())
+
+        assert extra_handlers_applied == len(handlers.DEFAULT_EXTRA_HANDLERS)
+
+    def test_extra_handlers_calls_string_import(
+        self, monkeypatch, mocker, mock_importlib_import_module
+    ):
+        """Test that extra handlers with string imports are called correctly."""
+        # Set default handlers to empty for this test to isolate the settings one.
+        monkeypatch.setattr(handlers, "DEFAULT_EXTRA_HANDLERS", [])
+        # Make importlib.import_module return the test mock handler when called
+        mock_handler = mocker.MagicMock()
+        dummy_module = types.SimpleNamespace(mock_handler=mock_handler)
+        mock_importlib_import_module.return_value = dummy_module
+        # Patch the settings to include the test mock handler
         mocker.patch(
             "drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS",
-            [mock_extra_handler, mock_another_extra_handler],
+            # Add dummy path to have at least one mock handler to import from a string
+            ["path.to.module.mock_handler"],
         )
 
-        exc = mocker.MagicMock()
-        handlers.apply_extra_handlers(exc)
+        # exc = mocker.MagicMock()
+        exc = Exception()
+        extra_handlers_applied = handlers.apply_extra_handlers(exc)
 
-        mock_extra_handler.assert_called_once_with(exc)
-        mock_another_extra_handler.assert_called_once_with(exc)
+        assert extra_handlers_applied == 1
+        mock_handler.assert_called_once_with(exc)
 
-    def test_no_extra_handlers(self, mocker):
-        """Test that no extra handlers are called when EXTRA_HANDLERS is empty."""
-        mock_extra_handler = mocker.MagicMock()
+    def test_extra_handlers_calls_multiple(self, mocker, mock_importlib_import_module):
+        """
+        Test that both default and settings extra handlers are called correctly.
+        """
+        # Make importlib.import_module return the test mock handler when called
+        mock_handler = mocker.MagicMock()
+        dummy_module = types.SimpleNamespace(mock_handler=mock_handler)
+        mock_importlib_import_module.return_value = dummy_module
+        # Patch the settings to include the test mock handler
+        mocker.patch(
+            "drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS",
+            # Add dummy path to have at least one mock handler to import from a string
+            ["path.to.module.mock_handler"],
+        )
 
-        exc = mocker.MagicMock()
-        handlers.apply_extra_handlers(exc)
+        # exc = mocker.MagicMock()
+        exc = Exception()
+        extra_handlers_applied = handlers.apply_extra_handlers(exc)
 
-        mock_extra_handler.assert_not_called()
+        assert (
+            extra_handlers_applied == len(handlers.DEFAULT_EXTRA_HANDLERS) + 1
+        )  # 1 for the settings handler
+        mock_handler.assert_called_once_with(exc)
+
+    def test_extra_handlers_value_error_on_non_string_import(self, mocker):
+        """
+        Test that a ValueError is raised when EXTRA_HANDLERS contains
+        a non-string import.
+        """
+        mocker.patch(
+            "drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS",
+            [mocker.MagicMock()],
+        )
+
+        with pytest.raises(ValueError) as e:
+            handlers.apply_extra_handlers(Exception())
+
+        assert "EXTRA_HANDLERS must be a list of strings" in str(e.value)
+
+    def test_extra_handlers_value_error_when_path_to_extra_handler_not_found(
+        self, mocker
+    ):
+        """
+        Test that a ValueError is raised when the path to the extra handler
+        does not exist.
+        """
+        mocker.patch(
+            "drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS",
+            ["path.to.non_existent_handler"],
+        )
+
+        with pytest.raises(ValueError) as e:
+            handlers.apply_extra_handlers(Exception())
+
+        assert "Path path.to.non_existent_handler not found." in str(e.value)
+
+    def test_extra_handlers_value_error_when_extra_handler_is_none(
+        self, mocker, mock_importlib_import_module
+    ):
+        """
+        Test that a ValueError is raised when the extra handler is None.
+        """
+        # Make importlib.import_module return a module without the expected attribute
+        dummy_module = types.SimpleNamespace()
+        mock_importlib_import_module.return_value = dummy_module
+        mocker.patch(
+            "drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS",
+            ["path.to.module.non_existent_handler"],
+        )
+
+        with pytest.raises(ValueError) as e:
+            handlers.apply_extra_handlers(Exception())
+
+        assert "Handler non_existent_handler not found." in str(e.value)
+
+    def test_extra_handlers_value_error_when_extra_handler_not_callable(
+        self, mocker, mock_importlib_import_module
+    ):
+        """
+        Test that a ValueError is raised when the extra handler is not callable.
+        """
+        # Make importlib.import_module return a non-callable attribute
+        dummy_module = types.SimpleNamespace(mock_handler="not_a_function")
+        mock_importlib_import_module.return_value = dummy_module
+        mocker.patch(
+            "drf_simple_api_errors.settings.api_settings.EXTRA_HANDLERS",
+            ["path.to.module.mock_handler"],
+        )
+
+        with pytest.raises(ValueError) as e:
+            handlers.apply_extra_handlers(Exception())
+
+        assert "Handler mock_handler is not callable." in str(e.value)
 
 
 class TestConvertDjangoExcToDRFAPIExc:
