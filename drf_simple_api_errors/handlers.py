@@ -63,7 +63,7 @@ def apply_extra_handlers(exc: Exception):
         func = getattr(module, func_name, None)
         if func is None:
             raise ValueError(f"Handler {func_name} not found.")
-        if not callable(func):
+        elif not callable(func):
             raise ValueError(f"Handler {func_name} is not callable.")
         else:
             settings_extra_handlers.append(func)
