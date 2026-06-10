@@ -242,6 +242,8 @@ DRF_SIMPLE_API_ERRORS = {
 }
 ```
 
+*N.B. If `SPECTACULAR_ERROR_STATUS_CODES` is set to an empty dict, only the `APIError` and `InvalidParam` schema components are injected — no error responses are attached to operations.*
+
 ## Support
 
 Please [open an issue](https://github.com/gripep/drf-simple-api-errors/issues/new).
