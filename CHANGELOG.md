@@ -1,5 +1,13 @@
 # Change Log
 
+## [2.2.0] - 2026-06-10
+
+Changes:
+
+- Add opt-in integration with [drf-spectacular](https://github.com/tfranzel/drf-spectacular/)
+- Improve performance
+- Update README
+
 ## [2.1.1] - 2025-10-12
 
 Changes:

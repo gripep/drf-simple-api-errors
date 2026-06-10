@@ -33,9 +33,10 @@ Compared to other similar and popular libraries, this library:
     - [CAMELIZE](#camelize)
     - [EXTRA_HANDLERS](#extra_handlers)
     - [FIELDS_SEPARATOR](#fields_separator)
-- [Testing](#testing)
+- [Integration with drf-spectacular](#integration-with-drf-spectacular)
 - [Support](#support)
 - [Contributing](#contributing)
+  - [Testing](#testing)
 
 ## Installation
 
@@ -53,7 +54,7 @@ Add `EXCEPTION_HANDLER` in your `REST_FRAMEWORK` settings of your Django project
 
 ```python
 REST_FRAMEWORK = {
-    # ...
+    # Your other settings...
     "EXCEPTION_HANDLER": "drf_simple_api_errors.exception_handler",
 }
 ```
@@ -88,7 +89,7 @@ API error messages will include the following keys:
 ```json
 {
   "title": "Error message.",
-  "details": null,
+  "detail": null,
   "invalid_params": [
     {
       "name": "field_name",
@@ -139,7 +140,7 @@ If `CAMELIZE` is set to `True`:
 ```json
 {
   "title": "Error message.",
-  "details": null,
+  "detail": null,
   "invalidParams": [
     {
       "name": "fieldName",
@@ -192,7 +193,64 @@ Will result in:
 }
 ```
 
-## Testing
+## Integration with drf-spectacular
+
+This library provides a [drf-spectacular](https://github.com/tfranzel/drf-spectacular) postprocessing hook that adds standardized error response schemas to your OpenAPI documentation.
+
+Install with drf-spectacular support:
+
+```
+pip install drf-simple-api-errors[openapi]
+```
+
+Then add the postprocessing hook to your `SPECTACULAR_SETTINGS`:
+
+```python
+SPECTACULAR_SETTINGS = {
+    # Your other settings...
+    "POSTPROCESSING_HOOKS": [
+        # Only if you use djangorestframework-camel-case
+        "drf_spectacular.contrib.djangorestframework_camel_case.camelize_serializer_fields",
+        # Always include the hooks below
+        "drf_spectacular.hooks.postprocess_schema_enums",
+        "drf_simple_api_errors.integrations.spectacular.postprocess_schema_inject_errors",
+    ],
+}
+```
+
+The hook:
+
+- Defines reusable `APIError` and `InvalidParam` schema components
+- Adds error responses (400, 401, 403, 404, 500) to all API operations
+- Respects the [`CAMELIZE`](#camelize) setting for property names. When your API uses `djangorestframework-camel-case`, also include `camelize_serializer_fields` in `POSTPROCESSING_HOOKS` (as shown above) so request/response bodies and the injected error schemas stay consistently camel-cased.
+- Does not overwrite error responses you have explicitly defined via `@extend_schema`
+
+Place `postprocess_schema_inject_errors` last in `POSTPROCESSING_HOOKS` so any prior hooks have already shaped the operations before responses are injected.
+
+By default, the hook injects responses for status codes 400, 401, 403, 404, and 500 on every operation. If some of those codes only apply to specific endpoints (e.g. 400 and 404), restrict the dict to codes that apply universally and declare the rest per-operation via `@extend_schema`:
+
+```python
+DRF_SIMPLE_API_ERRORS = {
+    # Your other settings...
+
+    # Only inject universally applicable error responses (e.g. 401, 403, 500)
+    "SPECTACULAR_ERROR_STATUS_CODES": {
+        "401": "Unauthorized",
+        "403": "Forbidden",
+        "500": "Server error",
+    },
+}
+```
+
+## Support
+
+Please [open an issue](https://github.com/gripep/drf-simple-api-errors/issues/new).
+
+## Contributing
+
+Please use the [Github Flow](https://guides.github.com/introduction/flow/). In a nutshell, create a branch, commit your code, and open a pull request.
+
+### Testing
 
 All the necessary commands are included in the `Makefile`.
 
@@ -211,11 +269,3 @@ Finally, run `tox` to ensure the changes work for every supported python version
 pip install tox  # only if necessary
 tox -v
 ```
-
-## Support
-
-Please [open an issue](https://github.com/gripep/drf-simple-api-errors/issues/new).
-
-## Contributing
-
-Please use the [Github Flow](https://guides.github.com/introduction/flow/). In a nutshell, create a branch, commit your code, and open a pull request.
