@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "drf-simple-api-errors"
-version = "2.1.1"
+version = "2.2.0"
 description = "A library for Django Rest Framework returning consistent and easy-to-parse API error messages."
 authors = ["Gian <30044863+gripep@users.noreply.github.com>"]
 license = "MIT"
@@ -37,14 +37,22 @@ requires-poetry = "^2.1"
 
 
 [tool.poetry.dependencies]
+# Python version
 python = ">=3.9,<4.0"
-
-Django = ">=2.2"
+# Core dependencies
+django = ">=2.2"
 djangorestframework = ">=3.0"
+# Optional dependencies, included in the below `extras`
+drf-spectacular = { version = "^0.28.0", optional = true }
+
+
+[tool.poetry.extras]
+openapi = ["drf-spectacular"]
 
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.1.1"
+drf-spectacular = "^0.28.0"
 factory-boy = "^3.3.0"
 flake8 = "^7.0.0"
 ipdb = "^0.13.13"

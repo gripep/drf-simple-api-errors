@@ -12,6 +12,13 @@ DEFAULTS = {
     "CAMELIZE": False,
     "EXTRA_HANDLERS": [],
     "FIELDS_SEPARATOR": ".",
+    "SPECTACULAR_ERROR_STATUS_CODES": {
+        "400": "Validation error",
+        "401": "Authentication error",
+        "403": "Permission denied",
+        "404": "Not found",
+        "500": "Server error",
+    },
 }
 
 # List of settings that may be in string import notation
