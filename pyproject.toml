@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/gripep/drf-simple-api-errors"
 repository = "https://github.com/gripep/drf-simple-api-errors"
-documentation = "https://github.com/gripep/drf-simple-api-errors/blob/master/README.md"
+documentation = "https://github.com/gripep/drf-simple-api-errors/blob/main/README.md"
 packages = [{ include = "drf_simple_api_errors" }]
 keywords = [
     "python",
